@@ -225,6 +225,84 @@ async def _fetch_transactions(
     return resp.json()
 
 
+@mcp.tool(tags={'curated', 'categories'})
+async def list_categories(user_id: int) -> List[dict]:
+    """List all categories for a user."""
+    resp = await _client.get(f'/users/{user_id}/categories')
+    resp.raise_for_status()
+    return resp.json()
+
+
+@mcp.tool(tags={'curated', 'categories'})
+async def get_category(category_id: int) -> dict:
+    """Get category details by ID."""
+    resp = await _client.get(f'/categories/{category_id}')
+    resp.raise_for_status()
+    return resp.json()
+
+
+@mcp.tool(tags={'curated', 'categories'})
+async def get_category_rules(category_id: int) -> List[dict]:
+    """List rules for a category (if any)."""
+    resp = await _client.get(f'/categories/{category_id}/category_rules')
+    resp.raise_for_status()
+    return resp.json()
+
+
+async def _fetch_category_transactions(
+    category_id: int,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+) -> List[dict]:
+    """Internal helper to fetch transactions for a category without tool wrapper."""
+    params: Dict[str, Any] = {}
+    if start_date:
+        params['start_date'] = start_date
+    if end_date:
+        params['end_date'] = end_date
+    resp = await _client.get(f'/categories/{category_id}/transactions', params=params)
+    resp.raise_for_status()
+    return resp.json()
+
+
+@mcp.tool(tags={'curated', 'categories', 'transactions'})
+async def list_category_transactions(
+    category_id: int,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+) -> List[dict]:
+    """List transactions for a category with optional date range (YYYY-MM-DD)."""
+    return await _fetch_category_transactions(category_id, start_date, end_date)
+
+
+@mcp.tool(tags={'curated', 'reports', 'categories'})
+async def category_spend_summary(
+    category_id: int,
+    start_date: str,
+    end_date: str,
+) -> dict:
+    """Summarize spending for a single category over a period.
+
+    Returns {category_id, total, count}.
+    """
+    txns = await _fetch_category_transactions(
+        category_id=category_id, start_date=start_date, end_date=end_date
+    )
+    total = 0.0
+    count = 0
+    for t in txns:
+        amt = t.get('amount') or t.get('amount_cents')
+        try:
+            amount = float(amt) if isinstance(amt, (int, float, str)) else None
+        except ValueError:
+            amount = None
+        if amount is None:
+            continue
+        total += amount
+        count += 1
+    return {'category_id': category_id, 'total': total, 'count': count}
+
+
 def main() -> None:
     # Run the MCP server
     mcp.run()
