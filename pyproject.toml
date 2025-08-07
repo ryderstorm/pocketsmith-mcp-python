@@ -7,4 +7,7 @@ authors = [
     { name = "Damien Storm", email = "damien.r.storm@gmail.com" }
 ]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "fastmcp>=2.11.2",
+    "httpx>=0.28.1",
+]
