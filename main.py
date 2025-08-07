@@ -77,12 +77,25 @@ print(f'PocketSmith MCP mode: {"write" if _WRITE_MODE else "read-only"}', file=s
 _headers: dict = build_headers()
 _client: httpx.AsyncClient = httpx.AsyncClient(base_url=_base_url, headers=_headers)
 
-# Expose the combined server
-mcp: FastMCP = FastMCP.from_openapi(
-    openapi_spec=_spec,
-    client=_client,
-    name='PocketSmith MCP',
-)
+# Server initialization
+# Control inclusion of auto-generated OpenAPI tools via env flag (default: off)
+_INCLUDE_AUTOTOOLS = os.getenv('POCKETSMITH_INCLUDE_AUTOTOOLS', '').lower() in {
+    '1',
+    'true',
+    'yes',
+    'on',
+}
+
+if _INCLUDE_AUTOTOOLS:
+    # Full surface (read + write according to API), useful for power users
+    mcp: FastMCP = FastMCP.from_openapi(
+        openapi_spec=_spec,
+        client=_client,
+        name='PocketSmith MCP',
+    )
+else:
+    # Curated-only surface (read-only by design)
+    mcp = FastMCP(name='PocketSmith MCP')
 
 
 @mcp.tool(tags={'curated', 'users'})
