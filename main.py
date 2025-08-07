@@ -131,6 +131,58 @@ async def get_transaction(transaction_id: int) -> dict:
     return resp.json()
 
 
+# -----------------------
+# Utilities / Auth
+# -----------------------
+
+
+@mcp.tool(tags={'curated', 'utilities', 'read'})
+async def auth_check(user_id: int) -> dict:
+    """Check API auth by fetching the given user id; returns status and rate-limit.
+
+    Response shape: { ok, status, rate_limit: {limit, remaining, reset}, user_id }
+    """
+    resp = await _client.get(f'/users/{user_id}')
+    ok = 200 <= resp.status_code < 300
+    rate = {
+        'limit': resp.headers.get('X-Rate-Limit-Limit'),
+        'remaining': resp.headers.get('X-Rate-Limit-Remaining'),
+        'reset': resp.headers.get('X-Rate-Limit-Reset'),
+    }
+    out = {
+        'ok': ok,
+        'status': resp.status_code,
+        'rate_limit': rate,
+        'user_id': user_id,
+    }
+    if ok:
+        return out
+    # If not ok, raise for status to surface error details to client
+    resp.raise_for_status()
+    return out
+
+
+# -----------------------
+# Scenarios (read-only whitelist)
+# -----------------------
+
+
+@mcp.tool(tags={'curated', 'scenarios', 'read'})
+async def list_account_scenarios(account_id: int) -> List[dict]:
+    """List scenarios for an account (GET /accounts/{account_id}/scenarios)."""
+    resp = await _client.get(f'/accounts/{account_id}/scenarios')
+    resp.raise_for_status()
+    return resp.json()
+
+
+@mcp.tool(tags={'curated', 'scenarios', 'read'})
+async def get_scenario(scenario_id: int) -> dict:
+    """Get a scenario by ID (GET /scenarios/{id})."""
+    resp = await _client.get(f'/scenarios/{scenario_id}')
+    resp.raise_for_status()
+    return resp.json()
+
+
 @mcp.tool(tags={'curated', 'accounts'})
 async def get_accounts(user_id: int) -> List[dict]:
     """List all accounts for the given user."""
