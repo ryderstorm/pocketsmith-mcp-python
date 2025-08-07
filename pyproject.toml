@@ -1,0 +1,10 @@
+[project]
+name = "pocketsmith-mcp-gpt-5"
+version = "0.1.0"
+description = "PocketSmith MCP server"
+readme = "README.md"
+authors = [
+    { name = "Damien Storm", email = "damien.r.storm@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = []
