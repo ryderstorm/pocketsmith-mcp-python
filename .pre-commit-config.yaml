@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.4
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty type checker
+        entry: uv run ty check .
+        language: system
+        pass_filenames: false
+        types: [python]
+
+ci:
+  autofix_commit_msg: "chore(pre-commit): auto-fix issues"
+  autofix_prs: true
+  autofix_summary: true
+  skip: []
