@@ -2,6 +2,7 @@ import json
 import os
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
+from datetime import datetime
 from pathlib import Path
 
 import httpx
@@ -301,6 +302,162 @@ async def category_spend_summary(
         total += amount
         count += 1
     return {'category_id': category_id, 'total': total, 'count': count}
+
+
+# -----------------------
+# Curated Reports tools
+# -----------------------
+
+
+@mcp.tool(tags={'curated', 'reports'})
+async def top_spending_categories(
+    user_id: int,
+    start_date: str,
+    end_date: str,
+    limit: int = 10,
+) -> List[dict]:
+    """Top categories by absolute spend over a period.
+
+    Returns list of {category, total, count} sorted by |total| desc.
+    """
+    txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
+    groups: Dict[str, Dict[str, Any]] = defaultdict(lambda: {'total': 0.0, 'count': 0})
+    for t in txns:
+        amt = t.get('amount') or t.get('amount_cents')
+        try:
+            amount = float(amt) if isinstance(amt, (int, float, str)) else None
+        except ValueError:
+            amount = None
+        if amount is None:
+            continue
+
+        cat = t.get('category') or {}
+        key = (cat or {}).get('title') if isinstance(cat, dict) else None
+        key = key or t.get('category_name') or '(uncategorised)'
+
+        g = groups[str(key)]
+        g['total'] += amount
+        g['count'] += 1
+
+    result = [{'category': k, 'total': v['total'], 'count': v['count']} for k, v in groups.items()]
+    result.sort(key=lambda x: abs(x['total']), reverse=True)
+    return result[: max(0, limit)]
+
+
+@mcp.tool(tags={'curated', 'reports'})
+async def top_spending_payees(
+    user_id: int,
+    start_date: str,
+    end_date: str,
+    limit: int = 10,
+) -> List[dict]:
+    """Top payees by absolute spend over a period.
+
+    Returns list of {payee, total, count} sorted by |total| desc.
+    """
+    txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
+    groups: Dict[str, Dict[str, Any]] = defaultdict(lambda: {'total': 0.0, 'count': 0})
+    for t in txns:
+        amt = t.get('amount') or t.get('amount_cents')
+        try:
+            amount = float(amt) if isinstance(amt, (int, float, str)) else None
+        except ValueError:
+            amount = None
+        if amount is None:
+            continue
+
+        key = t.get('payee') or t.get('payee_name') or t.get('merchant') or '(unknown)'
+        g = groups[str(key)]
+        g['total'] += amount
+        g['count'] += 1
+
+    result = [{'payee': k, 'total': v['total'], 'count': v['count']} for k, v in groups.items()]
+    result.sort(key=lambda x: abs(x['total']), reverse=True)
+    return result[: max(0, limit)]
+
+
+@mcp.tool(tags={'curated', 'reports'})
+async def monthly_spend_trend(
+    user_id: int,
+    start_date: str,
+    end_date: str,
+    group_by: str = 'total',
+) -> List[dict]:
+    """Monthly spend trend between start_date and end_date.
+
+    group_by: 'total' | 'category' | 'payee'
+    - total: sum per YYYY-MM
+    - category: sum per YYYY-MM per category
+    - payee: sum per YYYY-MM per payee
+    """
+    txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
+
+    def month_key(s: Optional[str]) -> Optional[str]:
+        if not s:
+            return None
+        try:
+            return datetime.fromisoformat(s[:10]).strftime('%Y-%m')
+        except Exception:
+            return None
+
+    if group_by == 'category':
+        groups: Dict[str, Dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        for t in txns:
+            m = month_key(t.get('date') or t.get('transaction_date') or t.get('created_at'))
+            if not m:
+                continue
+            amt = t.get('amount') or t.get('amount_cents')
+            try:
+                amount = float(amt)
+            except Exception:
+                continue
+            cat = t.get('category') or {}
+            key = (cat or {}).get('title') if isinstance(cat, dict) else None
+            key = key or t.get('category_name') or '(uncategorised)'
+            groups[m][str(key)] += amount
+        # flatten
+        out: List[dict] = []
+        for m, cats in groups.items():
+            for k, total in cats.items():
+                out.append({'month': m, 'category': k, 'total': total})
+        out.sort(key=lambda x: (x['month'], -abs(x['total'])))
+        return out
+
+    if group_by == 'payee':
+        groups2: Dict[str, Dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        for t in txns:
+            m = month_key(t.get('date') or t.get('transaction_date') or t.get('created_at'))
+            if not m:
+                continue
+            amt = t.get('amount') or t.get('amount_cents')
+            try:
+                amount = float(amt)
+            except Exception:
+                continue
+            key = t.get('payee') or t.get('payee_name') or t.get('merchant') or '(unknown)'
+            groups2[m][str(key)] += amount
+        out2: List[dict] = []
+        for m, payees in groups2.items():
+            for k, total in payees.items():
+                out2.append({'month': m, 'payee': k, 'total': total})
+        out2.sort(key=lambda x: (x['month'], -abs(x['total'])))
+        return out2
+
+    # total per month
+    totals: Dict[str, float] = defaultdict(float)
+    for t in txns:
+        m = month_key(t.get('date') or t.get('transaction_date') or t.get('created_at'))
+        if not m:
+            continue
+        amt = t.get('amount') or t.get('amount_cents')
+        try:
+            amount = float(amt)
+        except Exception:
+            continue
+        totals[m] += amount
+    result = [{'month': m, 'total': total} for m, total in totals.items()]
+    result.sort(key=lambda x: x['month'])
+    return result
 
 
 def main() -> None:
