@@ -185,9 +185,3 @@ Set them either in your shell or pass through Inspector with `-e` flags.
 ## Why stdio here?
 
 This server uses FastMCP with `mcp.run()` which defaults to stdio transport. The Inspector can launch your Python entrypoint (main.py) and speak MCP over stdio without additional wiring.
-
----
-
-```bash
-just inspector
-```

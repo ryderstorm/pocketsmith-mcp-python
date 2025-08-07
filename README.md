@@ -46,6 +46,7 @@ just format     # Ruff formatter
 just type       # Ty type check
 just hooks-install  # install pre-commit hooks
 just hooks-run      # run all hooks across repo
+just inspector      # launch MCP Inspector UI with randomized ports
 ```
 
 Under the hood these use uv run so they execute inside the project environment.
@@ -87,6 +88,20 @@ uv run python -m main
 ```
 
 If no auth variables are set, the server still starts but API calls will likely be unauthorized.
+
+## Inspect / debug with MCP Inspector
+
+Quick start (UI) via Just:
+
+```bash
+just inspector
+```
+
+CLI example (no UI), listing tools:
+
+```bash
+npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/list
+```
 
 ## Project layout
 - main.py — MCP server initialization, shared HTTP client, and curated tools
