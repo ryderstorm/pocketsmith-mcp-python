@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 from pathlib import Path
+import sys
 
 import httpx
 from fastmcp import FastMCP
@@ -69,6 +70,10 @@ that simplify common workflows.
 _spec: dict = load_openapi_spec()
 _base_url: str = detect_base_url(_spec)
 load_dotenv()
+
+# Read/write mode: default to READ-ONLY unless explicitly enabled
+_WRITE_MODE = os.getenv('POCKETSMITH_WRITE_MODE', '').lower() in {'1', 'true', 'yes', 'on'}
+print(f'PocketSmith MCP mode: {"write" if _WRITE_MODE else "read-only"}', file=sys.stderr)
 _headers: dict = build_headers()
 _client: httpx.AsyncClient = httpx.AsyncClient(base_url=_base_url, headers=_headers)
 
@@ -226,7 +231,7 @@ async def _fetch_transactions(
     return resp.json()
 
 
-@mcp.tool(tags={'curated', 'categories'})
+@mcp.tool(tags={'curated', 'categories', 'read'})
 async def list_categories(user_id: int) -> List[dict]:
     """List all categories for a user."""
     resp = await _client.get(f'/users/{user_id}/categories')
@@ -234,7 +239,7 @@ async def list_categories(user_id: int) -> List[dict]:
     return resp.json()
 
 
-@mcp.tool(tags={'curated', 'categories'})
+@mcp.tool(tags={'curated', 'categories', 'read'})
 async def get_category(category_id: int) -> dict:
     """Get category details by ID."""
     resp = await _client.get(f'/categories/{category_id}')
@@ -242,7 +247,7 @@ async def get_category(category_id: int) -> dict:
     return resp.json()
 
 
-@mcp.tool(tags={'curated', 'categories'})
+@mcp.tool(tags={'curated', 'categories', 'read'})
 async def get_category_rules(category_id: int) -> List[dict]:
     """List rules for a category (if any)."""
     resp = await _client.get(f'/categories/{category_id}/category_rules')
@@ -266,7 +271,7 @@ async def _fetch_category_transactions(
     return resp.json()
 
 
-@mcp.tool(tags={'curated', 'categories', 'transactions'})
+@mcp.tool(tags={'curated', 'categories', 'transactions', 'read'})
 async def list_category_transactions(
     category_id: int,
     start_date: Optional[str] = None,
@@ -276,7 +281,7 @@ async def list_category_transactions(
     return await _fetch_category_transactions(category_id, start_date, end_date)
 
 
-@mcp.tool(tags={'curated', 'reports', 'categories'})
+@mcp.tool(tags={'curated', 'reports', 'categories', 'read'})
 async def category_spend_summary(
     category_id: int,
     start_date: str,
@@ -309,7 +314,7 @@ async def category_spend_summary(
 # -----------------------
 
 
-@mcp.tool(tags={'curated', 'reports'})
+@mcp.tool(tags={'curated', 'reports', 'read'})
 async def top_spending_categories(
     user_id: int,
     start_date: str,
@@ -344,7 +349,7 @@ async def top_spending_categories(
     return result[: max(0, limit)]
 
 
-@mcp.tool(tags={'curated', 'reports'})
+@mcp.tool(tags={'curated', 'reports', 'read'})
 async def top_spending_payees(
     user_id: int,
     start_date: str,
@@ -376,7 +381,7 @@ async def top_spending_payees(
     return result[: max(0, limit)]
 
 
-@mcp.tool(tags={'curated', 'reports'})
+@mcp.tool(tags={'curated', 'reports', 'read'})
 async def monthly_spend_trend(
     user_id: int,
     start_date: str,
