@@ -31,8 +31,16 @@ $EDITOR .env
 Environment variables supported:
 - POCKETSMITH_ACCESS_TOKEN (OAuth2 bearer token)
 - POCKETSMITH_DEVELOPER_KEY (developer key)
+- POCKETSMITH_WRITE_MODE (optional: 1/true/yes/on to indicate write mode; default off)
+- POCKETSMITH_INCLUDE_AUTOTOOLS (optional: 1/true/yes/on to include all auto-generated OpenAPI tools; default off)
 
 The server will load_dotenv() on import, so a local .env is honored.
+
+Defaults and modes:
+
+- By default, the server starts in read-only mode and exposes only curated read tools. This keeps the surface area small and safe for LLMs.
+- To include the full set of OpenAPI-generated tools (which may include write-capable endpoints), set `POCKETSMITH_INCLUDE_AUTOTOOLS=1`.
+- `POCKETSMITH_WRITE_MODE=1` only toggles the runtime indicator/logging and does not automatically expose write tools; tool exposure is controlled by `POCKETSMITH_INCLUDE_AUTOTOOLS`.
 
 ## Common tasks (Justfile)
 With just installed, run any of these recipes:

@@ -110,6 +110,27 @@ async def me(user_id: int) -> dict:
     return resp.json()
 
 
+# -----------------------
+# Small whitelist of raw GET wrappers (read-only)
+# -----------------------
+
+
+@mcp.tool(tags={'curated', 'accounts', 'read'})
+async def get_account_raw(account_id: int) -> dict:
+    """Fetch the raw account payload by ID (GET /accounts/{id})."""
+    resp = await _client.get(f'/accounts/{account_id}')
+    resp.raise_for_status()
+    return resp.json()
+
+
+@mcp.tool(tags={'curated', 'transactions', 'read'})
+async def get_transaction(transaction_id: int) -> dict:
+    """Fetch a single transaction by ID (GET /transactions/{id})."""
+    resp = await _client.get(f'/transactions/{transaction_id}')
+    resp.raise_for_status()
+    return resp.json()
+
+
 @mcp.tool(tags={'curated', 'accounts'})
 async def get_accounts(user_id: int) -> List[dict]:
     """List all accounts for the given user."""
@@ -476,6 +497,27 @@ async def monthly_spend_trend(
     result = [{'month': m, 'total': total} for m, total in totals.items()]
     result.sort(key=lambda x: x['month'])
     return result
+
+
+# -----------------------
+# Curated Payees tools (read-only)
+# -----------------------
+
+
+@mcp.tool(tags={'curated', 'payees', 'read'})
+async def list_payees(user_id: int) -> List[dict]:
+    """List all payees for a user."""
+    resp = await _client.get(f'/users/{user_id}/payees')
+    resp.raise_for_status()
+    return resp.json()
+
+
+@mcp.tool(tags={'curated', 'payees', 'read'})
+async def get_payee(payee_id: int) -> dict:
+    """Get details for a single payee."""
+    resp = await _client.get(f'/payees/{payee_id}')
+    resp.raise_for_status()
+    return resp.json()
 
 
 def main() -> None:
