@@ -16,6 +16,16 @@ References:
 
 Tip (macOS/dev): export your env vars in the same shell before starting the server or pass them via the Inspector with -e.
 
+## Quick Start (Just)
+
+Fastest way to launch Inspector and this server together:
+
+```bash
+just inspector
+```
+
+This starts the Inspector UI on randomized ports and runs the MCP server via stdio using uv. The chosen ports are printed to stderr.
+
 ## Quick Start (UI)
 
 1. Start MCP Inspector UI (opens <http://localhost:6274>):
@@ -168,10 +178,16 @@ Set them either in your shell or pass through Inspector with `-e` flags.
 
 - Increase timeouts if calling long-running tools:
 
-  ```
+  ```text
   http://localhost:6274/?MCP_SERVER_REQUEST_TIMEOUT=20000
   ```
 
 ## Why stdio here?
 
 This server uses FastMCP with `mcp.run()` which defaults to stdio transport. The Inspector can launch your Python entrypoint (main.py) and speak MCP over stdio without additional wiring.
+
+---
+
+```bash
+just inspector
+```

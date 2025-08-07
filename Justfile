@@ -31,3 +31,50 @@ hooks-install:
 # Run all hooks on all files
 hooks-run:
 	uv run pre-commit run --all-files
+
+# Uses the same command as in docs/mcp-inspector.md, but picks random free
+# localhost ports for CLIENT_PORT and SERVER_PORT to avoid conflicts.
+# Note: DANGEROUSLY_OMIT_AUTH=true is for trusted local development only.
+# Launch MCP Inspector with randomized ports (local dev)
+inspector:
+	#!/usr/bin/env -S uv run python
+	import os
+	import socket
+	import sys
+	from contextlib import closing
+
+	def alloc_port() -> int:
+		with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+			s.bind(('127.0.0.1', 0))
+			return int(s.getsockname()[1])
+
+	def pick_distinct_ports() -> tuple[int, int]:
+		a = alloc_port()
+		b = alloc_port()
+		while b == a:
+			b = alloc_port()
+		return a, b
+
+	def main() -> int:
+		client_port, server_port = pick_distinct_ports()
+		print(
+			f'Starting MCP Inspector:\n  CLIENT_PORT={client_port}\n  SERVER_PORT={server_port}\n',
+			file=sys.stderr,
+			flush=True,
+		)
+		env = os.environ.copy()
+		env['CLIENT_PORT'] = str(client_port)
+		env['SERVER_PORT'] = str(server_port)
+		env['DANGEROUSLY_OMIT_AUTH'] = 'true'
+		cmd = [
+			'npx',
+			'@modelcontextprotocol/inspector',
+			'uv',
+			'run',
+			'python',
+			'main.py',
+		]
+		os.execvpe(cmd[0], cmd, env)
+
+	if __name__ == '__main__':
+		raise SystemExit(main())
