@@ -134,8 +134,6 @@ npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/c
 npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/call --tool-name toolname --tool-arg param=value
 ```
 
-<!-- Badges moved to top -->
-
 ## Use with Goose (Desktop + CLI)
 
 You can use this MCP server as a custom extension in Goose. Two recommended ways to run it from any folder:
