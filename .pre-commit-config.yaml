@@ -32,6 +32,13 @@ repos:
         language: system
         pass_filenames: false
         types: [python]
+      - id: tests
+        name: run test suite
+        entry: just test
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
 
 ci:
   autofix_commit_msg: "chore(pre-commit): auto-fix issues"
