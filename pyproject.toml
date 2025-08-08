@@ -46,6 +46,12 @@ tag_format = "v{version}"
 # commit_parser = "angular"
 # Update the version field in pyproject.toml
 version_toml = ["pyproject.toml:project.version"]
+# Ensure uv.lock stays in sync with version changes and is committed
+# Run uv to refresh the lock file, then stage it so PSR includes it
+build_command = """
+    uv lock
+    git add uv.lock
+"""
 
 [tool.semantic_release.changelog]
 # Configure default templates to generate CHANGELOG.md in Markdown
