@@ -65,3 +65,4 @@ logs/
 # UV build artifacts
 .uv.lock
 .uv-cache/
+temp

@@ -71,6 +71,14 @@ _spec: dict = load_openapi_spec()
 _base_url: str = detect_base_url(_spec)
 load_dotenv()
 
+# Show warning if api key is missing
+if not os.getenv('POCKETSMITH_ACCESS_TOKEN') and not os.getenv('POCKETSMITH_DEVELOPER_KEY'):
+    print(
+        '[PocketSmith MCP] Warning: No POCKETSMITH_ACCESS_TOKEN or '
+        'POCKETSMITH_DEVELOPER_KEY set; API calls may be unauthorized.',
+        file=sys.stderr,
+    )
+
 # Read/write mode: default to READ-ONLY unless explicitly enabled
 _WRITE_MODE = os.getenv('POCKETSMITH_WRITE_MODE', '').lower() in {'1', 'true', 'yes', 'on'}
 print(f'PocketSmith MCP mode: {"write" if _WRITE_MODE else "read-only"}', file=sys.stderr)
