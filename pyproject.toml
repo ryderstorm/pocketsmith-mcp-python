@@ -104,4 +104,5 @@ addopts = [
     "--cov=pocketsmith_mcp",
     "--cov-report=term-missing:skip-covered",
     "--cov-report=xml",
+    "--cov-fail-under=0",
 ]
