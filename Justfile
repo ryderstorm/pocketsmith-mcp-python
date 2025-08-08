@@ -24,6 +24,10 @@ fix:
 format:
 	uv run ruff format .
 
+# Run tests
+test:
+	uv run pytest -vv
+
 # Type check with ty
 type:
 	uv run ty check .

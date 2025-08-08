@@ -483,14 +483,7 @@ async def monthly_spend_trend(
     - category: sum per YYYY-MM per category
     - payee: sum per YYYY-MM per payee
     """
-    if user_id is None:
-        me_resp = await _client.get('/me')
-        me_resp.raise_for_status()
-        me_body = me_resp.json() or {}
-        resolved = me_body.get('id')
-        if not isinstance(resolved, int):
-            raise RuntimeError('Unable to resolve user_id from /me response')
-        user_id = resolved
+    user_id = await _resolve_user_id(user_id)
     txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
 
     def month_key(s: Optional[str]) -> Optional[str]:
@@ -528,10 +521,8 @@ async def monthly_spend_trend(
             m = month_key(t.get('date') or t.get('transaction_date') or t.get('created_at'))
             if not m:
                 continue
-            amt = t.get('amount') or t.get('amount_cents')
-            try:
-                amount = float(amt)
-            except Exception:
+            amount = _parse_amount(t)
+            if amount is None:
                 continue
             key = t.get('payee') or t.get('payee_name') or t.get('merchant') or '(unknown)'
             groups2[m][str(key)] += amount

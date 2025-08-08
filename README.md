@@ -1,4 +1,4 @@
-# PocketSmith MCP
+# pocketsmith-mcp-python
 
 Developer-friendly MCP server for the PocketSmith API. Curated tools are layered on top of the OpenAPI-generated tools to provide LLM-friendly operations (accounts, transactions, summaries, etc.).
 
@@ -152,14 +152,14 @@ You can use this MCP server as a custom extension in Goose. Two recommended ways
         ```bash
         # ~/.local/bin/pocketsmith-mcp (example location on macOS/Linux)
         #!/usr/bin/env bash
-        MCP_DIR="/absolute/path/to/pocketsmith_mcp___gpt-5"
+        MCP_DIR="/absolute/path/to/pocketsmith-mcp-python"
         exec uv run --directory "$MCP_DIR" python -m pocketsmith_mcp "$@"
         ```
 
         Then in Goose, set Command to:
 
         ```bash
-        /absolute/path/to/pocketsmith_mcp___gpt-5/temp/pocketsmith-mcp
+        /absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp
         ```
     - Environment Variables: add one of
       - `POCKETSMITH_ACCESS_TOKEN` = your bearer token, or
@@ -189,7 +189,7 @@ Notes
 - If using the shim script:
 
   ```bash
-  goose session --with-extension '/absolute/path/to/pocketsmith_mcp___gpt-5/temp/pocketsmith-mcp'
+  goose session --with-extension '/absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp'
   ```
 
 ## Project layout
