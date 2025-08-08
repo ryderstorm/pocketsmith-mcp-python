@@ -17,6 +17,7 @@ dependencies = [
 dev = [
     "basedpyright>=1.31.1",
     "pre-commit>=4.2.0",
+    "python-semantic-release==10.2.0",
     "ruff>=0.12.8",
     "ty>=0.0.1a17",
 ]
@@ -41,12 +42,14 @@ division-by-zero = "error"
 [tool.semantic_release]
 # Use annotated tags like v1.2.3
 tag_format = "v{version}"
-# Generate and update CHANGELOG.md automatically
-changelog = true
 # Default commit parser (Angular/Conventional Commits)
 # commit_parser = "angular"
 # Update the version field in pyproject.toml
 version_toml = ["pyproject.toml:project.version"]
+
+[tool.semantic_release.changelog]
+# Configure default templates to generate CHANGELOG.md in Markdown
+default_templates = { changelog_file = "CHANGELOG.md", output_format = "md" }
 
 [tool.semantic_release.branches]
 # Release from the main branch
