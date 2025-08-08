@@ -37,3 +37,17 @@ indent-style = "space"
 # Start conservative; escalate later as code matures
 possibly-unresolved-reference = "warn"
 division-by-zero = "error"
+
+[tool.semantic_release]
+# Use annotated tags like v1.2.3
+tag_format = "v{version}"
+# Generate and update CHANGELOG.md automatically
+changelog = true
+# Default commit parser (Angular/Conventional Commits)
+# commit_parser = "angular"
+# Update the version field in pyproject.toml
+version_toml = ["pyproject.toml:project.version"]
+
+[tool.semantic_release.branches]
+# Release from the main branch
+main = { match = "main" }
