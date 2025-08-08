@@ -1,8 +1,9 @@
-## PocketSmith MCP
+# PocketSmith MCP
 
 Developer-friendly MCP server for the PocketSmith API. Curated tools are layered on top of the OpenAPI-generated tools to provide LLM-friendly operations (accounts, transactions, summaries, etc.).
 
 This repo is optimized for fast feedback using Astral tooling:
+
 - Ruff for linting and formatting
 - Ty for type checking (pre-release)
 - pre-commit for Git hooks
@@ -11,24 +12,27 @@ This repo is optimized for fast feedback using Astral tooling:
 ---
 
 ## Prerequisites
+
 - Python 3.11+
-- uv (https://docs.astral.sh/uv/)
+- uv (<https://docs.astral.sh/uv/>)
 
 ## Setup
-1) Install dependencies (uv will create/manage the venv):
 
-```bash
-uv sync
-```
+1. Install dependencies (uv will create/manage the venv):
 
-2) Copy the example env and set your auth (choose ONE auth form):
+    ```bash
+    uv sync
+    ```
 
-```bash
-cp .env.example .env
-$EDITOR .env
-```
+2. Copy the example env and set your auth (choose ONE auth form):
+
+    ```bash
+    cp .env.example .env
+    $EDITOR .env
+    ```
 
 Environment variables supported:
+
 - POCKETSMITH_ACCESS_TOKEN (OAuth2 bearer token)
 - POCKETSMITH_DEVELOPER_KEY (developer key)
 - POCKETSMITH_WRITE_MODE (optional: 1/true/yes/on to indicate write mode; default off)
@@ -42,7 +46,8 @@ Defaults and modes:
 - To include the full set of OpenAPI-generated tools (which may include write-capable endpoints), set `POCKETSMITH_INCLUDE_AUTOTOOLS=1`.
 - `POCKETSMITH_WRITE_MODE=1` only toggles the runtime indicator/logging and does not automatically expose write tools; tool exposure is controlled by `POCKETSMITH_INCLUDE_AUTOTOOLS`.
 
-## Common tasks (Justfile)
+### Common tasks (Justfile)
+
 With just installed, run any of these recipes:
 
 ```bash
@@ -60,6 +65,7 @@ just inspector      # launch MCP Inspector UI with randomized ports
 Under the hood these use uv run so they execute inside the project environment.
 
 ## Lint, format, and type-check
+
 - Ruff configuration is in pyproject.toml under [tool.ruff].
 - Ty configuration is under [tool.ty.rules].
 
@@ -74,6 +80,7 @@ uv run ty check .
 Note: Ty is pre-release and may change. Current CLI: ty check.
 
 ## Git hooks (pre-commit)
+
 This repo uses pre-commit to run Ruff and Ty on commit/push.
 
 Install hooks once:
@@ -89,6 +96,7 @@ uv run pre-commit run --all-files
 ```
 
 ## Run the MCP server
+
 The entry point runs the MCP server via main.py:
 
 ```bash
@@ -112,6 +120,7 @@ npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/l
 ```
 
 ## Project layout
+
 - main.py — MCP server initialization, shared HTTP client, and curated tools
 - reference/openapi.json — PocketSmith OpenAPI spec
 - Justfile — common tasks
@@ -218,6 +227,7 @@ npx @modelcontextprotocol/inspector --cli \
 ```
 
 ## Troubleshooting
+
 - Ensure .env is present or environment vars are exported in your shell.
 - Confirm Python 3.11+ with `python --version`.
 - If Ty errors on callability, avoid calling decorated tools internally; use internal helper functions (already done for transactions).
