@@ -141,19 +141,24 @@ You can use this MCP server as a custom extension in Goose. Two recommended ways
 3. Fill the form as follows:
     - Type: `STDIO`
     - Command:
-      - Option A (run directly with uv):
+      - Option A (recommended, via uvx after install):
+
         ```bash
-        uv run --directory /absolute/path/to/pocketsmith_mcp___gpt-5 python -m main
+        uvx pocketsmith-mcp
         ```
-      - Option B (recommended portable shim): create a script, make it executable, and use its path as the command.
+
+      - Option B (portable shim for current repo before PyPI release): create a script, make it executable, and use its path as the command.
+
         ```bash
         # ~/.local/bin/pocketsmith-mcp (example location on macOS/Linux)
         #!/usr/bin/env bash
         MCP_DIR="/absolute/path/to/pocketsmith_mcp___gpt-5"
-        exec uv run --directory "$MCP_DIR" python -m main "$@"
+        exec uv run --directory "$MCP_DIR" python -m pocketsmith_mcp "$@"
         ```
+
         Then in Goose, set Command to:
-        ```
+
+        ```bash
         /absolute/path/to/pocketsmith_mcp___gpt-5/temp/pocketsmith-mcp
         ```
     - Environment Variables: add one of
@@ -172,22 +177,29 @@ Notes
 ### Goose CLI alternatives
 
 - One-off session with this extension:
+
   ```bash
-  goose session --with-extension 'uv run --directory /absolute/path/to/pocketsmith_mcp___gpt-5 python -m main'
+  goose session --with-extension 'uvx pocketsmith-mcp'
   ```
 - Web UI via CLI:
+
   ```bash
-  goose web --open --with-extension 'uv run --directory /absolute/path/to/pocketsmith_mcp___gpt-5 python -m main'
+  goose web --open --with-extension 'uvx pocketsmith-mcp'
   ```
 - If using the shim script:
+
   ```bash
   goose session --with-extension '/absolute/path/to/pocketsmith_mcp___gpt-5/temp/pocketsmith-mcp'
   ```
 
 ## Project layout
 
-- main.py — MCP server initialization, shared HTTP client, and curated tools
-- reference/openapi.json — PocketSmith OpenAPI spec
+- pocketsmith_mcp/ — installable package with server and entry point
+  - __main__.py — console entry (python -m pocketsmith_mcp)
+  - server.py — MCP server initialization, shared HTTP client, curated tools
+  - data/openapi.json — bundled PocketSmith OpenAPI spec (packaged)
+- main.py — legacy root entry kept for local dev; package entry is preferred
+- reference/openapi.json — legacy location; package uses bundled data
 - Justfile — common tasks
 - .pre-commit-config.yaml — hooks for Ruff/Ty
 - pyproject.toml — project + tooling configuration

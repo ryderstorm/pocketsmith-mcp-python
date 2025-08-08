@@ -760,9 +760,9 @@ wheels = [
 ]
 
 [[package]]
-name = "pocketsmith-mcp-gpt-5"
-version = "0.1.0"
-source = { virtual = "." }
+name = "pocketsmith-mcp"
+version = "1.0.0"
+source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
     { name = "httpx" },

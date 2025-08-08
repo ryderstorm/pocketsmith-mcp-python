@@ -6,7 +6,11 @@ _default:
 
 # Run a quick import check to ensure the server loads
 run:
-	uv run python -c "import main; print('PocketSmith MCP imported OK')"
+	uv run python -c "import pocketsmith_mcp; print('PocketSmith MCP imported OK')"
+
+# Run the MCP server via the package entry (stdio)
+serve:
+	uv run python -m pocketsmith_mcp
 
 # Lint (no changes)
 lint:

@@ -56,8 +56,7 @@ def load_openapi_spec() -> dict:
     except Exception:
         pass
 
-    # 2) Fallback to repo path
-    ref_path = Path(__file__).parent / 'reference' / 'openapi.json'
+    ref_path = Path(__file__).parent.parent / 'reference' / 'openapi.json'
     with ref_path.open('r', encoding='utf-8') as f:
         return json.load(f)
 
