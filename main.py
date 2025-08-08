@@ -283,6 +283,9 @@ async def get_category(category_id: int) -> dict:
 async def get_category_rules(category_id: int) -> List[dict]:
     """List rules for a category (if any)."""
     resp = await _client.get(f'/categories/{category_id}/category_rules')
+    # Some categories may have no rules; the API may return 404 in that case.
+    if resp.status_code == 404:
+        return []
     resp.raise_for_status()
     return resp.json()
 
