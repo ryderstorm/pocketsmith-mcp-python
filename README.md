@@ -119,6 +119,14 @@ CLI example (no UI), listing tools:
 npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/list
 ```
 
+CLI examples (no UI), calling tools:
+
+```bash
+npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/call --tool-name toolname
+
+npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/call --tool-name toolname --tool-arg param=value
+```
+
 ## Project layout
 
 - main.py — MCP server initialization, shared HTTP client, and curated tools
