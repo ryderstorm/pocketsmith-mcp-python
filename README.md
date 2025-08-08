@@ -133,6 +133,7 @@ npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/c
 ![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 [![PyPI](https://img.shields.io/pypi/v/pocketsmith-mcp.svg)](https://pypi.org/project/pocketsmith-mcp/)
 [![Build](https://github.com/ryderstorm/pocketsmith_mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ryderstorm/pocketsmith_mcp/actions)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/ryderstorm/pocketsmith-mcp-python?utm_source=oss&utm_medium=github&utm_campaign=ryderstorm%2Fpocketsmith-mcp-python&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 ## Use with Goose (Desktop + CLI)
 
