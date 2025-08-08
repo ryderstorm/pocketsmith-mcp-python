@@ -32,6 +32,8 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - uses: astral-sh/setup-uv@v3
+      - name: Update lockfile
+        run: uv lock
       - name: Semantic Release (noop)
         uses: python-semantic-release/python-semantic-release@v10.2.0
         with:

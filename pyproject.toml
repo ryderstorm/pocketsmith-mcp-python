@@ -52,6 +52,8 @@ build_command = """
     uv lock
     git add uv.lock
 """
+# Also explicitly include uv.lock in the version commit
+assets = ["uv.lock"]
 
 [tool.semantic_release.changelog]
 # Configure default templates to generate CHANGELOG.md in Markdown
