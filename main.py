@@ -203,7 +203,7 @@ async def get_account_overview(account_id: int) -> dict:
 
 @mcp.tool(tags={'curated', 'transactions'})
 async def list_transactions(
-    user_id: int,
+    user_id: Optional[int] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     updated_since: Optional[str] = None,
@@ -214,7 +214,18 @@ async def list_transactions(
     """List user transactions with common filters.
 
     Dates should be YYYY-MM-DD. updated_since should be ISO8601.
+
+    If user_id is not provided, it will be resolved automatically via GET /me.
     """
+    if user_id is None:
+        me_resp = await _client.get('/me')
+        me_resp.raise_for_status()
+        me_body = me_resp.json() or {}
+        resolved = me_body.get('id')
+        if not isinstance(resolved, int):
+            raise RuntimeError('Unable to resolve user_id from /me response')
+        user_id = resolved
+
     return await _fetch_transactions(
         user_id=user_id,
         start_date=start_date,
