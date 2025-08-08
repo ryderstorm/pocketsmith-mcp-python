@@ -1,9 +1,11 @@
 name: CI
 
 on:
+  # Avoid duplicate runs: run on PRs for branches, and on direct pushes to main
   push:
-    branches: ["**"]
+    branches: ["main"]
   pull_request:
+    branches: ["**"]
 
 jobs:
   test:
