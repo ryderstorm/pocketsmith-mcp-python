@@ -35,6 +35,6 @@ jobs:
         uses: python-semantic-release/python-semantic-release@v10.2.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          no_operation_mode: true  # dry-run for safety; flip to false to release
+          no_operation_mode: false  # enable real releases
           # verbosity: 2
           # strict: true
