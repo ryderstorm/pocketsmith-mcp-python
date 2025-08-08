@@ -146,33 +146,6 @@ def _parse_retry_after(value: Optional[str]) -> Optional[float]:
         return None
 
 
-class TransientError(Exception):
-    """Marker for retryable errors."""
-
-
-def _parse_retry_after(value: Optional[str]) -> Optional[float]:
-    """Parse Retry-After header to seconds.
-
-    Supports seconds or HTTP-date per RFC 7231.
-    """
-    if not value:
-        return None
-    try:
-        # If it's an integer number of seconds
-        return float(value)
-    except Exception:
-        pass
-    try:
-        # HTTP-date
-        dt = eut.parsedate_to_datetime(value)
-        if dt is None:
-            return None
-        # Convert to epoch seconds delta from now
-        return max(0.0, (dt.timestamp() - time.time()))
-    except Exception:
-        return None
-
-
 def _install_retries(client: httpx.AsyncClient) -> None:
     original_request = client.request
 
