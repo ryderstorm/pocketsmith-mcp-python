@@ -25,8 +25,10 @@ format:
 	uv run ruff format .
 
 # Run tests
+# Run tests
 test:
-	uv run pytest -vv
+	just sync-dev
+	uv run pytest -vv --cov=pocketsmith_mcp --cov-report=term-missing:skip-covered --cov-report=xml
 
 # Type check with ty
 type:
@@ -39,6 +41,10 @@ hooks-install:
 # Run all hooks on all files
 hooks-run:
 	uv run pre-commit run --all-files
+
+# Ensure local environment is synced with dev dependencies
+sync-dev:
+	uv sync --all-extras --dev
 
 # Uses the same command as in docs/mcp-inspector.md, but picks random free
 # localhost ports for CLIENT_PORT and SERVER_PORT to avoid conflicts.
