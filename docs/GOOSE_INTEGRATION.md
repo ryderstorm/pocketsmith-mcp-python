@@ -1,42 +1,70 @@
----
-# Goose Integration Guide (Desktop)
+# Goose Integration
 
-This MCP server is Goose-ready. Use this guide to add it to Goose Desktop and verify basic tool invocation.
+## Use with Goose (Desktop + CLI)
 
-## Prerequisites
-- Goose Desktop installed
-- Python 3.11+
-- uv installed
+You can use this MCP server as a custom extension in Goose. Two recommended ways to run it from any folder:
 
-## Quick Start
-1. Ensure env vars are set in your shell or via a .env file (either of):
-   - POCKETSMITH_ACCESS_TOKEN
-   - POCKETSMITH_DEVELOPER_KEY
-2. Run the server locally to verify:
-   - uv run python -m pocketsmith_mcp
-3. In Goose Desktop:
-   - Settings → Extensions → Add Custom Extension
-   - Transport: stdio
-   - Command: uv
-   - Args:
-     - run
-     - --project
-     - /absolute/path/to/pocketsmith-mcp-python
-     - python
-     - -m
-     - pocketsmith_mcp
-   - Save
-4. Test in Goose chat:
-   - Ask the assistant to list available MCP tools
-   - Invoke a read-only tool (e.g., list accounts) to confirm connectivity
+- Use `uv --directory` to point at this repo when launching the server
+- Or create a small shim script on your `$PATH` that wraps the command
 
-## Notes
-- This MCP exposes curated read-only tools by default. Full OpenAPI tools may be enabled via environment flags (see README).
-- For portability, create a small shell wrapper script that sets the working directory and invokes uv run as above.
-- For CI or headless validation, use the in-memory client with fastmcp.Client against pocketsmith_mcp.server.mcp
+### Goose Desktop (GUI)
 
-## Troubleshooting
-- If Goose cannot connect, open the server in Inspector to validate stdio:
-  - uv run -q python -m pocketsmith_mcp --inspect
-- Ensure POCKETSMITH_* auth variables are set for the Goose process environment.
-- If using macOS, allow the app to run external processes in Security & Privacy if prompted.
+1. Open Goose Desktop.
+2. Click the gear icon → Advanced Settings → Add Custom Extension.
+3. Fill the form as follows:
+    - Type: `STDIO`
+    - Command:
+      - Option A (recommended, via uvx after install):
+
+        ```bash
+        uvx pocketsmith-mcp
+        ```
+
+      - Option B (portable shim for current repo before PyPI release): create a script, make it executable, and use its path as the command.
+
+        ```bash
+        # ~/.local/bin/pocketsmith-mcp (example location on macOS/Linux)
+        #!/usr/bin/env bash
+        MCP_DIR="/absolute/path/to/pocketsmith-mcp-python"
+        exec uv run --directory "$MCP_DIR" python -m pocketsmith_mcp "$@"
+        ```
+
+        Then in Goose, set Command to:
+
+        ```bash
+        /absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp
+        ```
+
+    - Environment Variables: add one of
+      - `POCKETSMITH_ACCESS_TOKEN` = your bearer token, or
+      - `POCKETSMITH_DEVELOPER_KEY` = your developer key
+    - Timeout: e.g. `300` (default is fine)
+    - Name/Description: e.g. “PocketSmith” — curated read-only tools
+
+After saving, start a chat and Goose will load the extension and list the available tools. Try e.g. “Call get_accounts”.
+
+Notes
+
+- Using `python -m main` avoids relative path issues.
+- `.env` in the project directory will be loaded automatically by `uv run` unless you disable env files. You can also supply env via Goose.
+- To expose the full OpenAPI auto-tools temporarily, set `POCKETSMITH_INCLUDE_AUTOTOOLS=1` in the extension’s env config.
+
+### Goose CLI alternatives
+
+- One-off session with this extension:
+
+  ```bash
+  goose session --with-extension 'uvx pocketsmith-mcp'
+  ```
+
+- Web UI via CLI:
+
+  ```bash
+  goose web --open --with-extension 'uvx pocketsmith-mcp'
+  ```
+
+- If using the shim script:
+
+  ```bash
+  goose session --with-extension '/absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp'
+  ```
