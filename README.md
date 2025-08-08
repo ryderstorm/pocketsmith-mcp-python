@@ -134,6 +134,13 @@ npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/c
 npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/call --tool-name toolname --tool-arg param=value
 ```
 
+<!-- Badges -->
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
+[![PyPI](https://img.shields.io/pypi/v/pocketsmith-mcp.svg)](https://pypi.org/project/pocketsmith-mcp/)
+[![Build](https://github.com/ryderstorm/pocketsmith_mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ryderstorm/pocketsmith_mcp/actions)
+
 ## Use with Goose (Desktop + CLI)
 
 You can use this MCP server as a custom extension in Goose. Two recommended ways to run it from any folder:
