@@ -161,6 +161,7 @@ You can use this MCP server as a custom extension in Goose. Two recommended ways
         ```bash
         /absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp
         ```
+
     - Environment Variables: add one of
       - `POCKETSMITH_ACCESS_TOKEN` = your bearer token, or
       - `POCKETSMITH_DEVELOPER_KEY` = your developer key
@@ -170,6 +171,7 @@ You can use this MCP server as a custom extension in Goose. Two recommended ways
 After saving, start a chat and Goose will load the extension and list the available tools. Try e.g. “Call get_accounts”.
 
 Notes
+
 - Using `python -m main` avoids relative path issues.
 - `.env` in the project directory will be loaded automatically by `uv run` unless you disable env files. You can also supply env via Goose.
 - To expose the full OpenAPI auto-tools temporarily, set `POCKETSMITH_INCLUDE_AUTOTOOLS=1` in the extension’s env config.
@@ -181,11 +183,13 @@ Notes
   ```bash
   goose session --with-extension 'uvx pocketsmith-mcp'
   ```
+
 - Web UI via CLI:
 
   ```bash
   goose web --open --with-extension 'uvx pocketsmith-mcp'
   ```
+
 - If using the shim script:
 
   ```bash
@@ -247,25 +251,25 @@ Examples (CLI via MCP Inspector):
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --name get_accounts
+  uv run python main.py --method tools/call --tool-name get_accounts
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --name top_spending_categories
+  uv run python main.py --method tools/call --tool-name top_spending_categories
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --name top_spending_payees
+  uv run python main.py --method tools/call --tool-name top_spending_payees
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 --param group_by total \
-  uv run python main.py --method tools/call --name monthly_spend_trend
+  uv run python main.py --method tools/call --tool-name monthly_spend_trend
 ```
 
 ### Examples: end-to-end curated workflows
@@ -276,18 +280,18 @@ npx @modelcontextprotocol/inspector --cli \
 # A. Top categories in Q1 2025
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --name top_spending_categories
+  uv run python main.py --method tools/call --tool-name top_spending_categories
 
 # B. List transactions for a chosen category (replace <category_id>)
 npx @modelcontextprotocol/inspector --cli \
   --param category_id <category_id> \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --name list_category_transactions
+  uv run python main.py --method tools/call --tool-name list_category_transactions
 
 # C. Optionally, refine by date range or review flag
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 --param needs_review 1 \
-  uv run python main.py --method tools/call --name list_category_transactions
+  uv run python main.py --method tools/call --tool-name list_category_transactions
 ```
 
 1. Quick auth check, then list accounts and categories
@@ -295,15 +299,15 @@ npx @modelcontextprotocol/inspector --cli \
 ```bash
 # A. Verify token and see rate limits
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --name auth_check
+  uv run python main.py --method tools/call --tool-name auth_check
 
 # B. List accounts (auto-resolves user)
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --name get_accounts
+  uv run python main.py --method tools/call --tool-name get_accounts
 
 # C. List categories (auto-resolves user)
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --name list_categories
+  uv run python main.py --method tools/call --tool-name list_categories
 ```
 
 ## Troubleshooting
