@@ -164,8 +164,12 @@ async def auth_check() -> dict:
 
 
 @mcp.tool(tags={'curated', 'accounts'})
-async def get_accounts(user_id: int) -> List[dict]:
-    """List all accounts for the given user."""
+async def get_accounts(user_id: Optional[int] = None) -> List[dict]:
+    """List all accounts for the given user.
+
+    If user_id is not provided, it will be resolved automatically via GET /me.
+    """
+    user_id = await _resolve_user_id(user_id)
     resp = await _client.get(f'/users/{user_id}/accounts')
     resp.raise_for_status()
     return resp.json()
@@ -217,14 +221,7 @@ async def list_transactions(
 
     If user_id is not provided, it will be resolved automatically via GET /me.
     """
-    if user_id is None:
-        me_resp = await _client.get('/me')
-        me_resp.raise_for_status()
-        me_body = me_resp.json() or {}
-        resolved = me_body.get('id')
-        if not isinstance(resolved, int):
-            raise RuntimeError('Unable to resolve user_id from /me response')
-        user_id = resolved
+    user_id = await _resolve_user_id(user_id)
 
     return await _fetch_transactions(
         user_id=user_id,
@@ -269,14 +266,34 @@ async def _fetch_transactions(
     return resp.json()
 
 
+async def _resolve_user_id(user_id: Optional[int]) -> int:
+    """Resolve the effective user_id, calling GET /me if not provided.
+
+    Raises RuntimeError if /me does not return an integer id.
+    """
+    if user_id is not None:
+        return user_id
+    me_resp = await _client.get('/me')
+    me_resp.raise_for_status()
+    me_body = me_resp.json() or {}
+    resolved = me_body.get('id')
+    if not isinstance(resolved, int):
+        raise RuntimeError('Unable to resolve user_id from /me response')
+    return resolved
+
+
 # -----------------------
 # Categories
 # -----------------------
 
 
 @mcp.tool(tags={'curated', 'categories', 'read'})
-async def list_categories(user_id: int) -> List[dict]:
-    """List all categories for a user."""
+async def list_categories(user_id: Optional[int] = None) -> List[dict]:
+    """List all categories for a user.
+
+    If user_id is not provided, it will be resolved automatically via GET /me.
+    """
+    user_id = await _resolve_user_id(user_id)
     resp = await _client.get(f'/users/{user_id}/categories')
     resp.raise_for_status()
     return resp.json()
@@ -362,15 +379,16 @@ async def category_spend_summary(
 
 @mcp.tool(tags={'curated', 'reports', 'read'})
 async def top_spending_categories(
-    user_id: int,
     start_date: str,
     end_date: str,
+    user_id: Optional[int] = None,
     limit: int = 10,
 ) -> List[dict]:
     """Top categories by absolute spend over a period.
 
     Returns list of {category, total, count} sorted by |total| desc.
     """
+    user_id = await _resolve_user_id(user_id)
     txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
     groups: Dict[str, Dict[str, Any]] = defaultdict(lambda: {'total': 0.0, 'count': 0})
     for t in txns:
@@ -397,15 +415,16 @@ async def top_spending_categories(
 
 @mcp.tool(tags={'curated', 'reports', 'read'})
 async def top_spending_payees(
-    user_id: int,
     start_date: str,
     end_date: str,
+    user_id: Optional[int] = None,
     limit: int = 10,
 ) -> List[dict]:
     """Top payees by absolute spend over a period.
 
     Returns list of {payee, total, count} sorted by |total| desc.
     """
+    user_id = await _resolve_user_id(user_id)
     txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
     groups: Dict[str, Dict[str, Any]] = defaultdict(lambda: {'total': 0.0, 'count': 0})
     for t in txns:
@@ -429,10 +448,10 @@ async def top_spending_payees(
 
 @mcp.tool(tags={'curated', 'reports', 'read'})
 async def monthly_spend_trend(
-    user_id: int,
     start_date: str,
     end_date: str,
     group_by: str = 'total',
+    user_id: Optional[int] = None,
 ) -> List[dict]:
     """Monthly spend trend between start_date and end_date.
 
@@ -441,6 +460,14 @@ async def monthly_spend_trend(
     - category: sum per YYYY-MM per category
     - payee: sum per YYYY-MM per payee
     """
+    if user_id is None:
+        me_resp = await _client.get('/me')
+        me_resp.raise_for_status()
+        me_body = me_resp.json() or {}
+        resolved = me_body.get('id')
+        if not isinstance(resolved, int):
+            raise RuntimeError('Unable to resolve user_id from /me response')
+        user_id = resolved
     txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
 
     def month_key(s: Optional[str]) -> Optional[str]:
