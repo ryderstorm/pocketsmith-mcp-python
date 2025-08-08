@@ -119,6 +119,104 @@ npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/l
 - pyproject.toml — project + tooling configuration
 - .env.example — example environment variables
 
+## Tool Catalog (Curated)
+
+Only curated, read-only tools are exposed by default. Enable auto-generated
+OpenAPI tools with `POCKETSMITH_INCLUDE_AUTOTOOLS=1`.
+
+- users
+  - me(user_id: int)
+    - Get a user by id.
+
+- accounts
+  - get_accounts(user_id: int)
+  - get_account_overview(account_id: int)
+  - get_account_raw(account_id: int)
+
+- transactions
+  - list_transactions(user_id: int, start_date?: str, end_date?: str, category_id?: int, payee_id?: int, updated_since?: str, page?: int)
+  - summarize_spending(user_id: int, start_date: str, end_date: str, group_by: str = "category")
+  - get_transaction(transaction_id: int)
+
+- categories
+  - list_categories(user_id: int)
+  - get_category(category_id: int)
+  - get_category_rules(category_id: int)
+  - list_category_transactions(category_id: int, start_date?: str, end_date?: str, page?: int)
+  - category_spend_summary(category_id: int, start_date: str, end_date: str)
+
+- reports
+  - top_spending_categories(user_id: int, start_date: str, end_date: str, limit?: int = 10)
+  - top_spending_payees(user_id: int, start_date: str, end_date: str, limit?: int = 10)
+  - monthly_spend_trend(user_id: int, start_date: str, end_date: str, group_by?: "total"|"category"|"payee")
+
+- payees
+  - list_payees(user_id: int)
+  - get_payee(payee_id: int)
+
+- scenarios
+  - list_account_scenarios(account_id: int)
+  - get_scenario(scenario_id: int)
+
+- utilities
+  - auth_check(user_id: int) → { ok, status, rate_limit, user_id }
+
+Examples (CLI via MCP Inspector):
+
+```bash
+npx @modelcontextprotocol/inspector --cli \
+  --param user_id 12345 \
+  uv run python main.py --method tools/call --name list_payees
+```
+
+```bash
+npx @modelcontextprotocol/inspector --cli \
+  --param user_id 12345 --param start_date 2025-01-01 --param end_date 2025-03-31 \
+  uv run python main.py --method tools/call --name top_spending_categories
+```
+
+### Examples: end-to-end curated workflows
+
+1. Identify top category, then inspect its transactions and payees
+
+```bash
+# A. Top categories in Q1 2025
+npx @modelcontextprotocol/inspector --cli \
+  --param user_id 12345 \
+  --param start_date 2025-01-01 --param end_date 2025-03-31 \
+  uv run python main.py --method tools/call --name top_spending_categories
+
+# B. List transactions for a chosen category (replace <category_id>)
+npx @modelcontextprotocol/inspector --cli \
+  --param category_id <category_id> \
+  --param start_date 2025-01-01 --param end_date 2025-03-31 \
+  uv run python main.py --method tools/call --name list_category_transactions
+
+# C. Fetch details for a payee from those transactions (replace <payee_id>)
+npx @modelcontextprotocol/inspector --cli \
+  --param payee_id <payee_id> \
+  uv run python main.py --method tools/call --name get_payee
+```
+
+1. Quick auth check, then list accounts and scenarios
+
+```bash
+# A. Verify token and see rate limits
+npx @modelcontextprotocol/inspector --cli \
+  --param user_id 12345 \
+  uv run python main.py --method tools/call --name auth_check
+
+# B. List accounts (replace 12345)
+npx @modelcontextprotocol/inspector --cli \
+  --param user_id 12345 \
+  uv run python main.py --method tools/call --name get_accounts
+
+# C. Show scenarios for an account (replace <account_id>)
+npx @modelcontextprotocol/inspector --cli \
+  --param account_id <account_id> \
+  uv run python main.py --method tools/call --name list_account_scenarios
+```
+
 ## Troubleshooting
 - Ensure .env is present or environment vars are exported in your shell.
 - Confirm Python 3.11+ with `python --version`.
