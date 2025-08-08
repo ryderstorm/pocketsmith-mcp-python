@@ -1,5 +1,11 @@
 # pocketsmith-mcp-python
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
+[![PyPI](https://img.shields.io/pypi/v/pocketsmith-mcp.svg)](https://pypi.org/project/pocketsmith-mcp/)
+[![Build](https://github.com/ryderstorm/pocketsmith-mcp-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ryderstorm/pocketsmith-mcp-python/actions/workflows/ci.yml)
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/ryderstorm/pocketsmith-mcp-python?utm_source=oss&utm_medium=github&utm_campaign=ryderstorm%2Fpocketsmith-mcp-python&labelColor=171717&color=FF570A&label=CodeRabbit+Reviews)](https://coderabbit.ai)
+
 Developer-friendly MCP server for the PocketSmith API. Curated tools are layered on top of the OpenAPI-generated tools to provide LLM-friendly operations (accounts, transactions, summaries, etc.).
 
 This repo is optimized for fast feedback using Astral tooling:
