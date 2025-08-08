@@ -99,13 +99,9 @@ else:
 
 
 @mcp.tool(tags={'curated', 'users'})
-async def me(user_id: int) -> dict:
-    """Get the current user by ID.
-
-    Note: PocketSmith API does not expose a /me endpoint; you must provide
-    your own user_id. The token/key must authorize access to that user.
-    """
-    resp = await _client.get(f'/users/{user_id}')
+async def me() -> dict:
+    """Get the authorised user (GET /me)."""
+    resp = await _client.get('/me')
     resp.raise_for_status()
     return resp.json()
 
@@ -137,12 +133,12 @@ async def get_transaction(transaction_id: int) -> dict:
 
 
 @mcp.tool(tags={'curated', 'utilities', 'read'})
-async def auth_check(user_id: int) -> dict:
+async def auth_check() -> dict:
     """Check API auth by fetching the given user id; returns status and rate-limit.
 
     Response shape: { ok, status, rate_limit: {limit, remaining, reset}, user_id }
     """
-    resp = await _client.get(f'/users/{user_id}')
+    resp = await _client.get('/me')
     ok = 200 <= resp.status_code < 300
     rate = {
         'limit': resp.headers.get('X-Rate-Limit-Limit'),
@@ -153,7 +149,7 @@ async def auth_check(user_id: int) -> dict:
         'ok': ok,
         'status': resp.status_code,
         'rate_limit': rate,
-        'user_id': user_id,
+        'user_id': resp.json().get('id'),
     }
     if ok:
         return out
@@ -163,24 +159,8 @@ async def auth_check(user_id: int) -> dict:
 
 
 # -----------------------
-# Scenarios (read-only whitelist)
+# Accounts
 # -----------------------
-
-
-@mcp.tool(tags={'curated', 'scenarios', 'read'})
-async def list_account_scenarios(account_id: int) -> List[dict]:
-    """List scenarios for an account (GET /accounts/{account_id}/scenarios)."""
-    resp = await _client.get(f'/accounts/{account_id}/scenarios')
-    resp.raise_for_status()
-    return resp.json()
-
-
-@mcp.tool(tags={'curated', 'scenarios', 'read'})
-async def get_scenario(scenario_id: int) -> dict:
-    """Get a scenario by ID (GET /scenarios/{id})."""
-    resp = await _client.get(f'/scenarios/{scenario_id}')
-    resp.raise_for_status()
-    return resp.json()
 
 
 @mcp.tool(tags={'curated', 'accounts'})
@@ -216,6 +196,11 @@ async def get_account_overview(account_id: int) -> dict:
     return overview
 
 
+# -----------------------
+# Transactions
+# -----------------------
+
+
 @mcp.tool(tags={'curated', 'transactions'})
 async def list_transactions(
     user_id: int,
@@ -239,50 +224,6 @@ async def list_transactions(
         tx_type=type,
         needs_review=needs_review,
     )
-
-
-@mcp.tool(tags={'curated', 'reports', 'transactions'})
-async def summarize_spending(
-    user_id: int,
-    start_date: str,
-    end_date: str,
-    group_by: str = 'category',
-) -> List[dict]:
-    """Summarize spending over a period.
-
-    group_by: "category" or "payee".
-    Returns list of {group, total, count} sorted by absolute total desc.
-    """
-    txns = await _fetch_transactions(user_id=user_id, start_date=start_date, end_date=end_date)
-
-    groups: dict[str, dict[str, Any]] = defaultdict(lambda: {'total': 0.0, 'count': 0})
-    for t in txns:
-        amt = t.get('amount') or t.get('amount_cents')
-        # Normalize amount
-        if isinstance(amt, (int, float)):
-            amount = float(amt)
-        elif isinstance(amt, str):
-            try:
-                amount = float(amt)
-            except ValueError:
-                continue
-        else:
-            continue
-
-        if group_by == 'payee':
-            key = t.get('payee') or t.get('payee_name') or t.get('merchant') or '(unknown)'
-        else:
-            cat = t.get('category') or {}
-            key = (cat or {}).get('title') if isinstance(cat, dict) else None
-            key = key or t.get('category_name') or '(uncategorised)'
-
-        g = groups[str(key)]
-        g['total'] += amount
-        g['count'] += 1
-
-    result = [{'group': k, 'total': v['total'], 'count': v['count']} for k, v in groups.items()]
-    result.sort(key=lambda x: abs(x['total']), reverse=True)
-    return result
 
 
 async def _fetch_transactions(
@@ -315,6 +256,11 @@ async def _fetch_transactions(
     resp = await _client.get(f'/users/{user_id}/transactions', params=params)
     resp.raise_for_status()
     return resp.json()
+
+
+# -----------------------
+# Categories
+# -----------------------
 
 
 @mcp.tool(tags={'curated', 'categories', 'read'})
@@ -552,24 +498,19 @@ async def monthly_spend_trend(
 
 
 # -----------------------
-# Curated Payees tools (read-only)
+# Scenarios
 # -----------------------
+# Note: The current OpenAPI spec only documents /scenarios/{id}/events.
+# There are no documented endpoints for /accounts/{id}/scenarios or
+# /scenarios/{id}. Curated scenario tools have been removed to avoid
+# exposing non-existent endpoints.
 
 
-@mcp.tool(tags={'curated', 'payees', 'read'})
-async def list_payees(user_id: int) -> List[dict]:
-    """List all payees for a user."""
-    resp = await _client.get(f'/users/{user_id}/payees')
-    resp.raise_for_status()
-    return resp.json()
-
-
-@mcp.tool(tags={'curated', 'payees', 'read'})
-async def get_payee(payee_id: int) -> dict:
-    """Get details for a single payee."""
-    resp = await _client.get(f'/payees/{payee_id}')
-    resp.raise_for_status()
-    return resp.json()
+# -----------------------
+# Payees
+# -----------------------
+# Note: The OpenAPI spec does not include /payees or /users/{id}/payees paths.
+# Curated payee tools have been removed to avoid exposing non-existent endpoints.
 
 
 def main() -> None:
