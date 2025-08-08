@@ -141,65 +141,71 @@ npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/c
 Only curated, read-only tools are exposed by default. Enable auto-generated
 OpenAPI tools with `POCKETSMITH_INCLUDE_AUTOTOOLS=1`.
 
+- Note on `user_id`: For many curated tools, `user_id` is optional. When
+  omitted, the server will automatically resolve it using `GET /me` and use the
+  current authenticated user's id. You can still pass an explicit `user_id` for
+  multi-user/admin scenarios.
+
 - users
-  - me(user_id: int)
-    - Get a user by id.
+  - me()
+    - Get the authorised user (GET /me).
 
 - accounts
-  - get_accounts(user_id: int)
+  - get_accounts(user_id?: int)
   - get_account_overview(account_id: int)
   - get_account_raw(account_id: int)
 
 - transactions
-  - list_transactions(user_id: int, start_date?: str, end_date?: str, category_id?: int, payee_id?: int, updated_since?: str, page?: int)
-  - summarize_spending(user_id: int, start_date: str, end_date: str, group_by: str = "category")
+  - list_transactions(user_id?: int, start_date?: str, end_date?: str, updated_since?: str, uncategorised?: int, type?: "debit"|"credit", needs_review?: int)
   - get_transaction(transaction_id: int)
 
 - categories
-  - list_categories(user_id: int)
+  - list_categories(user_id?: int)
   - get_category(category_id: int)
   - get_category_rules(category_id: int)
   - list_category_transactions(category_id: int, start_date?: str, end_date?: str, page?: int)
   - category_spend_summary(category_id: int, start_date: str, end_date: str)
 
 - reports
-  - top_spending_categories(user_id: int, start_date: str, end_date: str, limit?: int = 10)
-  - top_spending_payees(user_id: int, start_date: str, end_date: str, limit?: int = 10)
-  - monthly_spend_trend(user_id: int, start_date: str, end_date: str, group_by?: "total"|"category"|"payee")
-
-- payees
-  - list_payees(user_id: int)
-  - get_payee(payee_id: int)
-
-- scenarios
-  - list_account_scenarios(account_id: int)
-  - get_scenario(scenario_id: int)
+  - top_spending_categories(user_id?: int, start_date: str, end_date: str, limit?: int = 10)
+  - top_spending_payees(user_id?: int, start_date: str, end_date: str, limit?: int = 10)
+  - monthly_spend_trend(user_id?: int, start_date: str, end_date: str, group_by?: "total"|"category"|"payee")
 
 - utilities
-  - auth_check(user_id: int) → { ok, status, rate_limit, user_id }
+  - auth_check() → { ok, status, rate_limit, user_id }
 
 Examples (CLI via MCP Inspector):
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
-  --param user_id 12345 \
-  uv run python main.py --method tools/call --name list_payees
+  uv run python main.py --method tools/call --name get_accounts
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
-  --param user_id 12345 --param start_date 2025-01-01 --param end_date 2025-03-31 \
+  --param start_date 2025-01-01 --param end_date 2025-03-31 \
   uv run python main.py --method tools/call --name top_spending_categories
+```
+
+```bash
+npx @modelcontextprotocol/inspector --cli \
+  --param start_date 2025-01-01 --param end_date 2025-03-31 \
+  uv run python main.py --method tools/call --name top_spending_payees
+```
+
+```bash
+npx @modelcontextprotocol/inspector --cli \
+  --param start_date 2025-01-01 --param end_date 2025-03-31 --param group_by total \
+  uv run python main.py --method tools/call --name monthly_spend_trend
 ```
 
 ### Examples: end-to-end curated workflows
 
-1. Identify top category, then inspect its transactions and payees
+1. Identify top category, then inspect its transactions
 
 ```bash
 # A. Top categories in Q1 2025
 npx @modelcontextprotocol/inspector --cli \
-  --param user_id 12345 \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
   uv run python main.py --method tools/call --name top_spending_categories
 
@@ -209,29 +215,26 @@ npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
   uv run python main.py --method tools/call --name list_category_transactions
 
-# C. Fetch details for a payee from those transactions (replace <payee_id>)
+# C. Optionally, refine by date range or review flag
 npx @modelcontextprotocol/inspector --cli \
-  --param payee_id <payee_id> \
-  uv run python main.py --method tools/call --name get_payee
+  --param start_date 2025-01-01 --param end_date 2025-03-31 --param needs_review 1 \
+  uv run python main.py --method tools/call --name list_category_transactions
 ```
 
-1. Quick auth check, then list accounts and scenarios
+1. Quick auth check, then list accounts and categories
 
 ```bash
 # A. Verify token and see rate limits
 npx @modelcontextprotocol/inspector --cli \
-  --param user_id 12345 \
   uv run python main.py --method tools/call --name auth_check
 
-# B. List accounts (replace 12345)
+# B. List accounts (auto-resolves user)
 npx @modelcontextprotocol/inspector --cli \
-  --param user_id 12345 \
   uv run python main.py --method tools/call --name get_accounts
 
-# C. Show scenarios for an account (replace <account_id>)
+# C. List categories (auto-resolves user)
 npx @modelcontextprotocol/inspector --cli \
-  --param account_id <account_id> \
-  uv run python main.py --method tools/call --name list_account_scenarios
+  uv run python main.py --method tools/call --name list_categories
 ```
 
 ## Troubleshooting
@@ -239,3 +242,17 @@ npx @modelcontextprotocol/inspector --cli \
 - Ensure .env is present or environment vars are exported in your shell.
 - Confirm Python 3.11+ with `python --version`.
 - If Ty errors on callability, avoid calling decorated tools internally; use internal helper functions (already done for transactions).
+
+## Design Notes for Contributors
+
+- user_id auto-resolution
+  - Many curated tools accept an optional `user_id`. When omitted, `_resolve_user_id` calls `GET /me` and returns the integer `id`.
+  - If `/me` does not return a valid integer id, `_resolve_user_id` raises `RuntimeError`.
+  - This improves UX for single-user/chat contexts, while still allowing explicit `user_id` for admin/multi-user cases.
+
+- Internal helpers vs decorated tools
+  - Curated tools do not call other decorated tools directly. Instead, internal helpers like `_fetch_transactions` and `_fetch_category_transactions` are used to keep type-checkers (Ty) happy and avoid nested tool invocation.
+
+- Env flags and surface area
+  - `POCKETSMITH_WRITE_MODE` only toggles a runtime indicator; it does not expose write-capable tools by itself.
+  - `POCKETSMITH_INCLUDE_AUTOTOOLS` controls exposure of all OpenAPI-generated tools. By default, only curated read-only tools are exposed to keep the surface small and safe.
