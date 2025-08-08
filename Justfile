@@ -6,7 +6,11 @@ _default:
 
 # Run a quick import check to ensure the server loads
 run:
-	uv run python -c "import main; print('PocketSmith MCP imported OK')"
+	uv run python -c "import pocketsmith_mcp; print('PocketSmith MCP imported OK')"
+
+# Run the MCP server via the package entry (stdio)
+serve:
+	uv run python -m pocketsmith_mcp
 
 # Lint (no changes)
 lint:
@@ -19,6 +23,10 @@ fix:
 # Format code
 format:
 	uv run ruff format .
+
+# Run tests
+test:
+	uv run pytest -vv
 
 # Type check with ty
 type:
@@ -72,7 +80,8 @@ inspector:
 			'uv',
 			'run',
 			'python',
-			'main.py',
+			'-m',
+			'pocketsmith_mcp',
 		]
 		os.execvpe(cmd[0], cmd, env)
 

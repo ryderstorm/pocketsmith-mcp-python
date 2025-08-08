@@ -5,11 +5,19 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 from pathlib import Path
 import sys
-from importlib import resources
 
 import httpx
 from fastmcp import FastMCP
 from dotenv import load_dotenv
+
+
+def _parse_amount(transaction: dict) -> Optional[float]:
+    """Parse amount from transaction, handling various formats safely."""
+    amt = transaction.get('amount') or transaction.get('amount_cents')
+    try:
+        return float(amt) if isinstance(amt, (int, float, str)) else None
+    except (ValueError, TypeError):
+        return None
 
 
 def build_headers() -> dict:
@@ -47,17 +55,18 @@ def load_openapi_spec() -> dict:
     Try packaged resource first (pocketsmith_mcp.data.openapi.json),
     then fall back to repository path reference/openapi.json.
     """
-    # 1) Try packaged resource
+    # 1) Try packaged resource (modern importlib.resources API)
     try:
-        pkg = 'pocketsmith_mcp.data'
-        if resources.is_resource(pkg, 'openapi.json'):
-            with resources.files(pkg).joinpath('openapi.json').open('r', encoding='utf-8') as f:  # type: ignore[attr-defined]
-                return json.load(f)
-    except Exception:
+        import importlib.resources as res
+
+        files = res.files('pocketsmith_mcp.data')
+        openapi_path = files / 'openapi.json'
+        with openapi_path.open('r', encoding='utf-8') as f:
+            return json.load(f)
+    except (ImportError, FileNotFoundError, AttributeError):
         pass
 
-    # 2) Fallback to repo path
-    ref_path = Path(__file__).parent / 'reference' / 'openapi.json'
+    ref_path = Path(__file__).parent.parent / 'reference' / 'openapi.json'
     with ref_path.open('r', encoding='utf-8') as f:
         return json.load(f)
 
@@ -87,13 +96,7 @@ _spec: dict = load_openapi_spec()
 _base_url: str = detect_base_url(_spec)
 load_dotenv()
 
-# Show warning if api key is missing
-if not os.getenv('POCKETSMITH_ACCESS_TOKEN') and not os.getenv('POCKETSMITH_DEVELOPER_KEY'):
-    print(
-        '[PocketSmith MCP] Warning: No POCKETSMITH_ACCESS_TOKEN or '
-        'POCKETSMITH_DEVELOPER_KEY set; API calls may be unauthorized.',
-        file=sys.stderr,
-    )
+# Duplicate auth warning removed (already handled in build_headers())
 
 # Read/write mode: default to READ-ONLY unless explicitly enabled
 _WRITE_MODE = os.getenv('POCKETSMITH_WRITE_MODE', '').lower() in {'1', 'true', 'yes', 'on'}
@@ -384,11 +387,7 @@ async def category_spend_summary(
     total = 0.0
     count = 0
     for t in txns:
-        amt = t.get('amount') or t.get('amount_cents')
-        try:
-            amount = float(amt) if isinstance(amt, (int, float, str)) else None
-        except ValueError:
-            amount = None
+        amount = _parse_amount(t)
         if amount is None:
             continue
         total += amount
@@ -484,14 +483,7 @@ async def monthly_spend_trend(
     - category: sum per YYYY-MM per category
     - payee: sum per YYYY-MM per payee
     """
-    if user_id is None:
-        me_resp = await _client.get('/me')
-        me_resp.raise_for_status()
-        me_body = me_resp.json() or {}
-        resolved = me_body.get('id')
-        if not isinstance(resolved, int):
-            raise RuntimeError('Unable to resolve user_id from /me response')
-        user_id = resolved
+    user_id = await _resolve_user_id(user_id)
     txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
 
     def month_key(s: Optional[str]) -> Optional[str]:
@@ -508,10 +500,8 @@ async def monthly_spend_trend(
             m = month_key(t.get('date') or t.get('transaction_date') or t.get('created_at'))
             if not m:
                 continue
-            amt = t.get('amount') or t.get('amount_cents')
-            try:
-                amount = float(amt)
-            except Exception:
+            amount = _parse_amount(t)
+            if amount is None:
                 continue
             cat = t.get('category') or {}
             key = (cat or {}).get('title') if isinstance(cat, dict) else None
@@ -531,10 +521,8 @@ async def monthly_spend_trend(
             m = month_key(t.get('date') or t.get('transaction_date') or t.get('created_at'))
             if not m:
                 continue
-            amt = t.get('amount') or t.get('amount_cents')
-            try:
-                amount = float(amt)
-            except Exception:
+            amount = _parse_amount(t)
+            if amount is None:
                 continue
             key = t.get('payee') or t.get('payee_name') or t.get('merchant') or '(unknown)'
             groups2[m][str(key)] += amount

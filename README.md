@@ -1,4 +1,4 @@
-# PocketSmith MCP
+# pocketsmith-mcp-python
 
 Developer-friendly MCP server for the PocketSmith API. Curated tools are layered on top of the OpenAPI-generated tools to provide LLM-friendly operations (accounts, transactions, summaries, etc.).
 
@@ -141,21 +141,27 @@ You can use this MCP server as a custom extension in Goose. Two recommended ways
 3. Fill the form as follows:
     - Type: `STDIO`
     - Command:
-      - Option A (run directly with uv):
+      - Option A (recommended, via uvx after install):
+
         ```bash
-        uv run --directory /absolute/path/to/pocketsmith_mcp___gpt-5 python -m main
+        uvx pocketsmith-mcp
         ```
-      - Option B (recommended portable shim): create a script, make it executable, and use its path as the command.
+
+      - Option B (portable shim for current repo before PyPI release): create a script, make it executable, and use its path as the command.
+
         ```bash
         # ~/.local/bin/pocketsmith-mcp (example location on macOS/Linux)
         #!/usr/bin/env bash
-        MCP_DIR="/absolute/path/to/pocketsmith_mcp___gpt-5"
-        exec uv run --directory "$MCP_DIR" python -m main "$@"
+        MCP_DIR="/absolute/path/to/pocketsmith-mcp-python"
+        exec uv run --directory "$MCP_DIR" python -m pocketsmith_mcp "$@"
         ```
+
         Then in Goose, set Command to:
+
+        ```bash
+        /absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp
         ```
-        /absolute/path/to/pocketsmith_mcp___gpt-5/temp/pocketsmith-mcp
-        ```
+
     - Environment Variables: add one of
       - `POCKETSMITH_ACCESS_TOKEN` = your bearer token, or
       - `POCKETSMITH_DEVELOPER_KEY` = your developer key
@@ -165,6 +171,7 @@ You can use this MCP server as a custom extension in Goose. Two recommended ways
 After saving, start a chat and Goose will load the extension and list the available tools. Try e.g. “Call get_accounts”.
 
 Notes
+
 - Using `python -m main` avoids relative path issues.
 - `.env` in the project directory will be loaded automatically by `uv run` unless you disable env files. You can also supply env via Goose.
 - To expose the full OpenAPI auto-tools temporarily, set `POCKETSMITH_INCLUDE_AUTOTOOLS=1` in the extension’s env config.
@@ -172,22 +179,31 @@ Notes
 ### Goose CLI alternatives
 
 - One-off session with this extension:
+
   ```bash
-  goose session --with-extension 'uv run --directory /absolute/path/to/pocketsmith_mcp___gpt-5 python -m main'
+  goose session --with-extension 'uvx pocketsmith-mcp'
   ```
+
 - Web UI via CLI:
+
   ```bash
-  goose web --open --with-extension 'uv run --directory /absolute/path/to/pocketsmith_mcp___gpt-5 python -m main'
+  goose web --open --with-extension 'uvx pocketsmith-mcp'
   ```
+
 - If using the shim script:
+
   ```bash
-  goose session --with-extension '/absolute/path/to/pocketsmith_mcp___gpt-5/temp/pocketsmith-mcp'
+  goose session --with-extension '/absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp'
   ```
 
 ## Project layout
 
-- main.py — MCP server initialization, shared HTTP client, and curated tools
-- reference/openapi.json — PocketSmith OpenAPI spec
+- pocketsmith_mcp/ — installable package with server and entry point
+  - __main__.py — console entry (python -m pocketsmith_mcp)
+  - server.py — MCP server initialization, shared HTTP client, curated tools
+  - data/openapi.json — bundled PocketSmith OpenAPI spec (packaged)
+- main.py — legacy root entry kept for local dev; package entry is preferred
+- reference/openapi.json — legacy location; package uses bundled data
 - Justfile — common tasks
 - .pre-commit-config.yaml — hooks for Ruff/Ty
 - pyproject.toml — project + tooling configuration
@@ -235,25 +251,25 @@ Examples (CLI via MCP Inspector):
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --name get_accounts
+  uv run python main.py --method tools/call --tool-name get_accounts
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --name top_spending_categories
+  uv run python main.py --method tools/call --tool-name top_spending_categories
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --name top_spending_payees
+  uv run python main.py --method tools/call --tool-name top_spending_payees
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 --param group_by total \
-  uv run python main.py --method tools/call --name monthly_spend_trend
+  uv run python main.py --method tools/call --tool-name monthly_spend_trend
 ```
 
 ### Examples: end-to-end curated workflows
@@ -264,18 +280,18 @@ npx @modelcontextprotocol/inspector --cli \
 # A. Top categories in Q1 2025
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --name top_spending_categories
+  uv run python main.py --method tools/call --tool-name top_spending_categories
 
 # B. List transactions for a chosen category (replace <category_id>)
 npx @modelcontextprotocol/inspector --cli \
   --param category_id <category_id> \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --name list_category_transactions
+  uv run python main.py --method tools/call --tool-name list_category_transactions
 
 # C. Optionally, refine by date range or review flag
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 --param needs_review 1 \
-  uv run python main.py --method tools/call --name list_category_transactions
+  uv run python main.py --method tools/call --tool-name list_category_transactions
 ```
 
 1. Quick auth check, then list accounts and categories
@@ -283,15 +299,15 @@ npx @modelcontextprotocol/inspector --cli \
 ```bash
 # A. Verify token and see rate limits
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --name auth_check
+  uv run python main.py --method tools/call --tool-name auth_check
 
 # B. List accounts (auto-resolves user)
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --name get_accounts
+  uv run python main.py --method tools/call --tool-name get_accounts
 
 # C. List categories (auto-resolves user)
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --name list_categories
+  uv run python main.py --method tools/call --tool-name list_categories
 ```
 
 ## Troubleshooting
