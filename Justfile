@@ -76,7 +76,8 @@ inspector:
 			'uv',
 			'run',
 			'python',
-			'main.py',
+			'-m',
+			'pocketsmith_mcp',
 		]
 		os.execvpe(cmd[0], cmd, env)
 
