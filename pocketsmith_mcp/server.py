@@ -184,7 +184,6 @@ def _install_retries(client: httpx.AsyncClient) -> None:
 
 
 _install_retries(_client)
-
 # Server initialization
 # Control inclusion of auto-generated OpenAPI tools via env flag (default: off)
 _INCLUDE_AUTOTOOLS = os.getenv('POCKETSMITH_INCLUDE_AUTOTOOLS', '').lower() in {
