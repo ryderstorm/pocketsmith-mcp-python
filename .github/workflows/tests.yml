@@ -2,11 +2,17 @@ name: Run tests and linting
 
 on:
   # Avoid duplicate runs: run on PRs for branches, and on direct pushes to main
+  # but ignore changes to pyproject.toml, CHANGELOG.md, and uv.lock
+  # This is to avoid running tests and linting for commits that only relate to
+  # creating a new release
   push:
     branches: ["main"]
+    paths-ignore:
+      - "pyproject.toml"
+      - "CHANGELOG.md"
+      - "uv.lock"
   pull_request:
     branches: ["**"]
-
 jobs:
   test:
     name: Test (uv + pytest)

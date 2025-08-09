@@ -3,9 +3,7 @@ name = "pocketsmith-mcp"
 version = "1.1.0"
 description = "PocketSmith MCP server (curated read-only by default; Goose-ready; uvx runnable)"
 readme = "README.md"
-authors = [
-    { name = "Damien Storm", email = "damien.r.storm@gmail.com" }
-]
+authors = [{ name = "Damien Storm", email = "damien.r.storm@gmail.com" }]
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 dependencies = [
@@ -14,7 +12,15 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "tenacity>=8.2.3",
 ]
-keywords = ["mcp", "model-context-protocol", "goose", "pocketsmith", "uvx", "ai", "agent"]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "goose",
+    "pocketsmith",
+    "uvx",
+    "ai",
+    "agent",
+]
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -36,14 +42,10 @@ requires = ["hatchling>=1.24.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-include = [
-  "pocketsmith_mcp/data/openapi.json",
-]
+include = ["pocketsmith_mcp/data/openapi.json"]
 
 [tool.hatch.build.targets.sdist]
-include = [
-  "pocketsmith_mcp/data/openapi.json",
-]
+include = ["pocketsmith_mcp/data/openapi.json"]
 
 [dependency-groups]
 dev = [
@@ -83,6 +85,8 @@ version_toml = ["pyproject.toml:project.version"]
 # Ensure uv.lock stays in sync with version changes and is committed
 # Run uv to refresh the lock file, then stage it so PSR includes it
 build_command = """
+    curl -LsSf https://astral.sh/uv/install.sh | sh -s
+    export PATH="$HOME/.local/bin:$PATH"
     uv lock
     git add uv.lock
 """
