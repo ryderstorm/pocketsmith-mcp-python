@@ -1,4 +1,4 @@
-name: CI
+name: Run tests and linting
 
 on:
   # Avoid duplicate runs: run on PRs for branches, and on direct pushes to main
@@ -11,6 +11,9 @@ jobs:
   test:
     name: Test (uv + pytest)
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,3 +42,26 @@ jobs:
           files: coverage.xml
           flags: unittests
           fail_ci_if_error: false
+          use_oidc: true
+
+  lint:
+    name: Lint (uv + ruff + ty)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install Python
+        run: uv python install 3.11
+
+      - name: Sync dependencies (dev)
+        run: uv sync --all-extras --dev
+
+      - name: Run ruff lint
+        run: uv run ruff check .
+
+      - name: Run ty type checker
+        run: uv run ty check .
