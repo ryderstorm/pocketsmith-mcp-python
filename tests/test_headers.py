@@ -56,7 +56,7 @@ def test_build_headers_access_token(monkeypatch):
     assert headers['Authorization'].startswith('Bearer ')
     assert headers['Accept'] == 'application/json'
     assert headers['Content-Type'] == 'application/json'
-
+    assert 'X-Developer-Key' not in headers
 
 def test_build_headers_developer_key(monkeypatch):
     monkeypatch.delenv('POCKETSMITH_ACCESS_TOKEN', raising=False)
