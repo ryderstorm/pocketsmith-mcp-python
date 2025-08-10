@@ -23,9 +23,15 @@ from types import MethodType
 
 def _parse_amount(transaction: dict) -> Optional[float]:
     """Parse amount from transaction, handling various formats safely."""
-    amt = transaction.get('amount') or transaction.get('amount_cents')
+    raw = None
+    if 'amount' in transaction:
+        raw = transaction.get('amount')
+    elif 'amount_cents' in transaction:
+        raw = transaction.get('amount_cents')
+    if raw is None:
+        return None
     try:
-        return float(amt) if isinstance(amt, (int, float, str)) else None
+        return float(raw)
     except (ValueError, TypeError):
         return None
 
@@ -495,11 +501,7 @@ async def top_spending_categories(
     txns = await _fetch_transactions(user_id, start_date=start_date, end_date=end_date)
     groups: Dict[str, Dict[str, Any]] = defaultdict(lambda: {'total': 0.0, 'count': 0})
     for t in txns:
-        amt = t.get('amount') or t.get('amount_cents')
-        try:
-            amount = float(amt) if isinstance(amt, (int, float, str)) else None
-        except ValueError:
-            amount = None
+        amount = _parse_amount(t)
         if amount is None:
             continue
 
@@ -619,10 +621,8 @@ async def monthly_spend_trend(
         m = month_key(t.get('date') or t.get('transaction_date') or t.get('created_at'))
         if not m:
             continue
-        amt = t.get('amount') or t.get('amount_cents')
-        try:
-            amount = float(amt)
-        except Exception:
+        amount = _parse_amount(t)
+        if amount is None:
             continue
         totals[m] += amount
     result = [{'month': m, 'total': total} for m, total in totals.items()]
