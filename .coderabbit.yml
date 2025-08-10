@@ -1,0 +1,13 @@
+version: 1
+language: en
+reviews:
+  path_filters:
+    - '!**/*.md'
+    - '**/*.py'
+    - '**/*.toml'
+    - '**/*.yml'
+  comment_on_tests: true
+  summarize: true
+  auto_approve_boring_changes: true
+  require_conventional_commits: true
+  max_summary_length: 500
