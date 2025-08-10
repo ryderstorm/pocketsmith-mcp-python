@@ -26,6 +26,8 @@ essential_txn_cases = [
     ({'amount': 1}, 1.0),
     ({'amount': '2.5'}, 2.5),
     ({'amount_cents': 3}, 3.0),
+    ({'amount': 0}, 0.0),          # numeric zero shouldn’t be treated as falsy
+    ({'amount_cents': 0}, 0.0),    # zero cents should also parse to 0.0
     ({'amount': None}, None),
     ({}, None),
 ]
