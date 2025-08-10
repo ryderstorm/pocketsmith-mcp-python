@@ -1,6 +1,6 @@
 [project]
 name = "pocketsmith-mcp"
-version = "1.1.1"
+version = "1.2.0"
 description = "PocketSmith MCP server (curated read-only by default; Goose-ready; uvx runnable)"
 readme = "README.md"
 authors = [{ name = "Damien Storm", email = "damien.r.storm@gmail.com" }]
