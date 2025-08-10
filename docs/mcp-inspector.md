@@ -24,7 +24,7 @@ Fastest way to launch Inspector and this server together:
 just inspector
 ```
 
-This starts the Inspector UI on randomized ports and runs the MCP server via stdio using uv. The chosen ports are printed to stderr.
+This starts the Inspector UI on randomized ports and runs the MCP server via stdio using uvx. The chosen ports are printed to stderr.
 
 ## Quick Start (UI)
 
@@ -38,13 +38,13 @@ This starts the Inspector UI on randomized ports and runs the MCP server via std
 
 2. Connect via stdio to this server:
    - In the Inspector UI, choose transport "stdio".
-   - Command: `python`
-   - Args: `main.py`
+   - Command: `pocketsmith-mcp`
+   - Args: (leave empty)
    - Env (set as needed):
      - `POCKETSMITH_ACCESS_TOKEN=...` or `POCKETSMITH_DEVELOPER_KEY=...`
 
-   Alternatively, pass args in the URL (helpful for repeat runs):
-   - `http://localhost:6274/?transport=stdio&serverCommand=python&serverArgs=main.py`
+   Alternatively, pass in the URL (helpful for repeat runs):
+   - `http://localhost:6274/?transport=stdio&serverCommand=pocketsmith-mcp`
 
 3. Explore your server
    - List tools, call tools, view resources, prompts, logs, and JSON-RPC traffic.
@@ -56,25 +56,25 @@ You can drive the server and call methods directly via CLI (no UI):
 - Launch inspector CLI pointing at your stdio server entry:
 
   ```bash
-  npx @modelcontextprotocol/inspector --cli python main.py
+  npx @modelcontextprotocol/inspector --cli uvx pocketsmith-mcp
   ```
 
 - Pass env variables to the server via Inspector (-e can be repeated):
 
   ```bash
-  npx @modelcontextprotocol/inspector -e POCKETSMITH_ACCESS_TOKEN=$POCKETSMITH_ACCESS_TOKEN --cli python main.py
+  npx @modelcontextprotocol/inspector -e POCKETSMITH_ACCESS_TOKEN=$POCKETSMITH_ACCESS_TOKEN --cli uvx pocketsmith-mcp
   ```
 
 - List tools:
 
   ```bash
-  npx @modelcontextprotocol/inspector --cli python main.py --method tools/list
+  npx @modelcontextprotocol/inspector --cli uvx pocketsmith-mcp --method tools/list
   ```
 
 - Call a tool (example: get_accounts):
 
   ```bash
-  npx @modelcontextprotocol/inspector --cli python main.py \
+  npx @modelcontextprotocol/inspector --cli uvx pocketsmith-mcp \
     --method tools/call \
     --tool-name get_accounts \
     --tool-arg user_id=12345
@@ -85,23 +85,23 @@ Notes:
 - Use `--` to separate Inspector flags from server args if needed.
 
   ```bash
-  npx @modelcontextprotocol/inspector -e POCKETSMITH_DEVELOPER_KEY=$POCKETSMITH_DEVELOPER_KEY -- python main.py
+  npx @modelcontextprotocol/inspector -e POCKETSMITH_DEVELOPER_KEY=$POCKETSMITH_DEVELOPER_KEY -- uvx pocketsmith-mcp
   ```
 
-## Running with uv (optional)
+## Running with uvx (optional)
 
-If you prefer uv (detected via uv.lock):
+If you prefer uvx (detected via uv.lock):
 
 - UI mode:
 
   ```bash
-  npx @modelcontextprotocol/inspector uv run python main.py
+  npx @modelcontextprotocol/inspector uvx pocketsmith-mcp
   ```
 
 - CLI mode:
 
   ```bash
-  npx @modelcontextprotocol/inspector --cli uv run python main.py
+  npx @modelcontextprotocol/inspector --cli uvx pocketsmith-mcp
   ```
 
 ## Sample config (multiple servers)
@@ -114,8 +114,7 @@ You can store presets in a JSON config and select them in the UI or CLI.
 {
   "mcpServers": {
     "pocketsmith-mcp": {
-      "command": "python",
-      "args": ["main.py"],
+      "command": "pocketsmith-mcp",
       "env": {
         "POCKETSMITH_ACCESS_TOKEN": "${POCKETSMITH_ACCESS_TOKEN}"
       }

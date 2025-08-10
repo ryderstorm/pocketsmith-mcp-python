@@ -32,7 +32,7 @@ You can use this MCP server as a custom extension in Goose. Two recommended ways
         Then in Goose, set Command to:
 
         ```bash
-        /absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp
+        ~/.local/bin/pocketsmith-mcp
         ```
 
     - Environment Variables: add one of
@@ -45,7 +45,7 @@ After saving, start a chat and Goose will load the extension and list the availa
 
 Notes
 
-- Using `python -m main` avoids relative path issues.
+- Prefer `uvx pocketsmith-mcp` (installed entrypoint) or `python -m pocketsmith_mcp` for local runs.
 - `.env` in the project directory will be loaded automatically by `uv run` unless you disable env files. You can also supply env via Goose.
 - To expose the full OpenAPI auto-tools temporarily, set `POCKETSMITH_INCLUDE_AUTOTOOLS=1` in the extension’s env config.
 
@@ -66,5 +66,5 @@ Notes
 - If using the shim script:
 
   ```bash
-  goose session --with-extension '/absolute/path/to/pocketsmith-mcp-python/temp/pocketsmith-mcp'
+  goose session --with-extension '~/.local/bin/pocketsmith-mcp'
   ```
