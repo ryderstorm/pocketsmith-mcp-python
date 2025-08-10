@@ -18,6 +18,24 @@ This repo is optimized for fast feedback using Astral tooling:
 
 ---
 
+## TL;DR
+
+```bash
+# Run via uvx (stdio)
+uvx pocketsmith-mcp
+# or
+python -m pocketsmith_mcp
+```
+
+Connect with MCP Inspector or Goose (Desktop/CLI), selecting a "stdio" server.
+
+### Auth options
+
+| Purpose                          | Var                         | Header                    |
+| -------------------------------- | --------------------------- | ------------------------- |
+| End-user workflows (recommended) | `POCKETSMITH_ACCESS_TOKEN`  | `Authorization: Bearer …` |
+| Developer/testing                | `POCKETSMITH_DEVELOPER_KEY` | `X-Developer-Key: …`      |
+
 ## Prerequisites
 
 - Python 3.11+
@@ -104,10 +122,12 @@ uv run pre-commit run --all-files
 
 ## Run the MCP server
 
-The entry point runs the MCP server via main.py:
+Use the package entry point:
 
 ```bash
-uv run python -m main
+uvx pocketsmith-mcp
+# or
+python -m pocketsmith_mcp
 ```
 
 If no auth variables are set, the server still starts but API calls will likely be unauthorized.
@@ -120,18 +140,30 @@ Quick start (UI) via Just:
 just inspector
 ```
 
+### MCP Inspector quick recipe
+
+```json
+{
+  "mcpServers": {
+    "pocketsmith": {
+      "command": "pocketsmith-mcp"
+    }
+  }
+}
+```
+
 CLI example (no UI), listing tools:
 
 ```bash
-npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/list
+npx @modelcontextprotocol/inspector --cli uvx pocketsmith-mcp --method tools/list
 ```
 
 CLI examples (no UI), calling tools:
 
 ```bash
-npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/call --tool-name toolname
+npx @modelcontextprotocol/inspector --cli uvx pocketsmith-mcp --method tools/call --tool-name toolname
 
-npx @modelcontextprotocol/inspector --cli uv run python main.py --method tools/call --tool-name toolname --tool-arg param=value
+npx @modelcontextprotocol/inspector --cli uvx pocketsmith-mcp --method tools/call --tool-name toolname --tool-arg param=value
 ```
 
 ## Use with Goose (Desktop + CLI)
@@ -195,25 +227,25 @@ Examples (CLI via MCP Inspector):
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
-  uv run python main.py --method tools/call --tool-name get_accounts
+  uvx pocketsmith-mcp --method tools/call --tool-name get_accounts
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --tool-name top_spending_categories
+  uvx pocketsmith-mcp --method tools/call --tool-name top_spending_categories
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 \
-  uv run python main.py --method tools/call --tool-name top_spending_payees
+  uvx pocketsmith-mcp --method tools/call --tool-name top_spending_payees
 ```
 
 ```bash
 npx @modelcontextprotocol/inspector --cli \
   --param start_date 2025-01-01 --param end_date 2025-03-31 --param group_by total \
-  uv run python main.py --method tools/call --tool-name monthly_spend_trend
+  uvx pocketsmith-mcp --method tools/call --tool-name monthly_spend_trend
 ```
 
 ### Examples: end-to-end curated workflows
