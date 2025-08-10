@@ -66,3 +66,7 @@ logs/
 .uv.lock
 .uv-cache/
 temp
+
+# Repo analysis artifacts
+repomix-output.xml
+repomix-*.xml
