@@ -32,4 +32,7 @@ def test_in_memory_client_lists_tools():
     # Basic sanity: list type and elements are dict-like or have name key/attr
     if tools:
         first = tools[0]
-        assert isinstance(first, (dict, object))
+        if isinstance(first, dict):
+            assert 'name' in first and isinstance(first['name'], str)
+        else:
+            assert hasattr(first, 'name') and isinstance(first.name, str)
